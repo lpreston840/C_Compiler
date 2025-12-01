@@ -6,14 +6,6 @@ Vars = {}
 def make_temporary():
     return f"tmp.{len(Vars)}" 
 
-def convert_unop(op):
-    match type(op):
-        case rdp.Negate:
-            return "negate"
-        case rdp.Complement:
-            return "Complement"
-
-
 class TACKYParser:
     def __init__(self, program):
         self.ast = program
@@ -29,8 +21,8 @@ class TACKYParser:
                 dst_name = make_temporary()
                 Vars[dst_name] = TACKYVar(dst_name)
                 dst = Vars[dst_name]
-                tacky_op = convert_unop(e.unary_operator)
-                self.instructions.append(TACKYUnary(tacky_op, src, dst))
+                op = e.unary_operator
+                self.instructions.append(TACKYUnary(op, src, dst))
                 for elm in self.instructions:
                     print(elm)
                 return dst
@@ -75,19 +67,6 @@ class TACKYFunction:
             instructions += str(elm) + ",\n\t\t\t     "
         return f"TACKYFunction(\n\t\tname={self.label},\n\t\tinstructions={instructions}\n\t)"
 
-class Mov:
-    def __init__(self, source, destination) -> None:
-        self.src = source
-        self.dst = destination
-
-    def __str__(self) -> str:
-        return f"Mov(src={self.src}, dst={self.dst})"
-    
-    def output(self):
-        src_sym = '$' if type(self.src.data) == int else '%'
-        dst_sym = '$' if type(self.dst.data) == int else '%'
-        return f"movl\t{src_sym}{self.src.data}, {dst_sym}{self.dst.data}"
-
 class TACKYReturn:
     def __init__(self, expression) -> None:
         self.exp = expression
@@ -104,7 +83,7 @@ class TACKYConstant:
 
 class TACKYUnary:
     def __init__(self, tacky_op, source, destination) -> None:
-        self.op = tacky_op
+        self.operator = tacky_op
         self.src = source
         self.dst = destination
     
@@ -113,7 +92,7 @@ class TACKYUnary:
 
 class TACKYBinary:
     def __init__(self, tacky_op, source1, source2, destination) -> None:
-        self.op = tacky_op
+        self.operator = tacky_op
         self.src1 = source1
         self.src2 = source2
         self.dst = destination
@@ -127,18 +106,3 @@ class TACKYVar:
     
     def __str__(self) -> str:
         return f"Var({self.name})"
-
-class TACKYOperand:
-    def __init__(self, data):
-        self.data = data
-
-    @classmethod
-    def Imm(cls, int_num):
-        return cls(int_num)
-    
-    @classmethod
-    def Register(cls):
-        return cls("eax")
-    
-    def __str__(self) -> str:
-        return str(self.data)
