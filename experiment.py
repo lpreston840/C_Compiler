@@ -9,10 +9,10 @@ class bar:
         return cls()
     
     def __str__(self) -> str:
-        if type(self) == bar.foo:
-            return "foo1"
+        if self == bar.foo:
+            return "foo"
         else:
-            return "bar"
+            return str(type(self))
     
 inst = bar.foo(1, 2)
 print(inst)
